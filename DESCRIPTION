@@ -1,0 +1,23 @@
+Package: pineplot
+Type: Package
+Title: Visualization of stacked symmetric matrices
+Version: 0.0.0.9000
+Authors@R: as.person(c(
+    "Farhad Maleki <farhad.maleki@usask.ca> [aut, cre]", 
+    "Katie Ovens <katie.ovens@usask.ca> [aut]"
+  ))
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: CCO
+Encoding: UTF-8
+LazyData: true
+Imports:
+  ggplot2 (>= 3.0.0),
+  grid,
+  gridExtra (>= 2.3),
+  reshape2 (>= 1.4.3)
+Suggests: knitr,
+    magick,
+    rmarkdown,
+    testthat
+VignetteBuilder: knitr
