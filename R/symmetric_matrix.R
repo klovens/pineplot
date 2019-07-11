@@ -1,7 +1,7 @@
 symmetric_matrix_generator <- function(exp_matrix, max.expression){
   #' Function that calculates the mutual expression between genes in a expression table.
   #'
-  #' @param exp_matrix The expression matrix where rows are the variables
+  #' @param exp_matrix The expression matrix where rows are the genes
   #' and columns are the samples/observations.
   #' @param max.expression is the maximum average value to normalize the average values
   #' of variables in exp_matrix.
@@ -21,14 +21,14 @@ symmetric_matrix_generator <- function(exp_matrix, max.expression){
   v <- rowMeans(exp_matrix)
   # calculate number of variables
   number_of_genes <- length(v)
-  #calculate mutual expression between each variable across rows and across columns
+  # calculate mutual expression between each variable across rows and across columns
   for(i in 1:number_of_genes){
     for(j in 1:number_of_genes){
-      #get mean expression value for row i
+      # get mean expression value for row i
       x = v[i]
-      #get mean expression value for column i
+      # get mean expression value for row j
       y = v[j]
-      #calculate the mutual expression, keeping it between 0 and 1 by dividing by the maximum
+      # calculate the mutual expression, keeping it between 0 and 1 by dividing by the maximum
       # average expression
       s = (x/max.expression)*(y/max.expression)
       # add the value to the symmetric matrix
