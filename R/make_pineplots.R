@@ -1,55 +1,30 @@
-draw_heatmap <- function(sym.matrix, fill.name="Value", xlabel="", ylabel="", lim=c(-1,1),
-                         pyramid=TRUE, breaks=c(-1,-0.5,0,0.5,1), midpoint=0, barwidth=5, barheight=1,
+#'  Plots a heatmap of a symmetric matrix.
+#'
+#'  @param sym.matrix A matrix of symmetric values indicating a relationship between variables of the rows/columns.
+#'  @param fill.name Name of values in the symmetric matrix.
+#'  @param xlabel Label to include on x-axis.
+#'  @param ylabel Label to include on y-axis.
+#'  @param lim Limits of the fill values.
+#'  @param pyramid Boolean indicates lower triangle of the heamap be removed (TRUE) or not (FALSE).
+#'  @param breaks Number of break points in the legend (if legend included).
+#'  @param midpoint The midpoint of the legend scale (if legend included).
+#'  @param barwidth Width of the legend (if legend included).
+#'  @param barheight Height of the legend (if legend included).
+#'  @param direction Legend direction either "vertical" or "horizontal".
+#'  @param legend Boolean value indicating whether or not to include a legend for the plot.
+#'  @return A ggplot heatmap object that can be further manipulated using ggplot components if necessary.
+#'  @examples
+#'  draw_heatmap(matrix(c(2,1,0,3,0,1,0,3,2),3,3), lim=c(0,3),breaks=c(0,1.5,3),midpoint=1.5)
+#'  draw_heatmap(matrix(c(-0.5,1,0,0.75,0,1,0,0.75,-0.5),3,3))
+#'  @export
+draw_heatmap <- function(sym.matrix, fill.name="Value", xlabel="", ylabel="", lim=NULL,
+                         pyramid=TRUE, breaks=waiver(), midpoint=0, barwidth=5, barheight=1,
                          text_size=8, direction="horizontal", legend=TRUE, low="blue",mid="white",high="red"){
-  #'  Make a ggplot2 triangle heatmap
-  #'
-  #'  Plots a heatmap of a symmetric matrix.
-  #'
-  #'  @param sym.matrix A matrix of symmetric values indicating a relationship between variables of the rows/columns.
-  #'  @param fill.name Name of values in the symmetric matrix.
-  #'  @param xlabel Label to include on x-axis.
-  #'  @param ylabel Label to include on y-axis.
-  #'  @param lim Limits of the fill values.
-  #'  @param pyramid Boolean indicates lower triangle of the heamap be removed (TRUE) or not (FALSE).
-  #'  @param breaks Number of break points in the legend (if legend included).
-  #'  @param midpoint The midpoint of the legend scale (if legend included).
-  #'  @param barwidth Width of the legend (if legend included).
-  #'  @param barheight Height of the legend (if legend included).
-  #'  @param direction Legend direction either "vertical" or "horizontal".
-  #'  @param legend Boolean value indicating whether or not to include a legend for the plot.
-  #'
-  #'  @return A ggplot heatmap object that can be further manipulated using ggplot components if necessary.
-  #'
-  #'  @examples
-  #'  draw_heatmap(matrix(c(2,1,0,3,0,1,0,3,2),3,3), lim=c(0,3),breaks=c(0,1.5,3),midpoint=1.5)
-  #'  draw_heatmap(matrix(c(-0.5,1,0,0.75,0,1,0,0.75,-0.5),3,3))
-
-  number.of.experiments <- dim(sym.matrix)[2]
-  # to remove the redundancy in the heatmap, set all cells in matrix under the diagonal
-  # to NA
-  if (pyramid == TRUE) {
-    # check if matrix is symmetric
-    if(!all(sym.matrix == t(sym.matrix))){
-      stop("The matrix is not symmetric!")
-    }
-
-    #if matrix is symmetric, then remove the redundant triangle of the matrix by setting to NA
-    for( i in 1:number.of.experiments){
-      j <- 1
-      while( j < i){
-        sym.matrix[i, j] <- NA
-        j <- j + 1
-      }
-    }
-  }
-
-  #reshape the matrix to get row/column pairs and their value (Note: dataframes will not work as expected
-  # of matrices here)
-  overlap.melted <- melt(sym.matrix, value.name=fill.name)
+  overlap.melted <- massage_data(sym.matrix, pyramid, fill.name)
   #use ggplot2 to visualize create a ggplot2 object
   plt <- ggplot(data=overlap.melted,
                 mapping = aes(x=Var1, y=Var2, fill=Value)) +
-    geom_tile() +
+		geom_tile() +
     theme(panel.background = element_blank(),
           plot.background = element_blank(),
           axis.text=element_text(color="gray15", angle=0),
@@ -64,7 +39,7 @@ draw_heatmap <- function(sym.matrix, fill.name="Value", xlabel="", ylabel="", li
     scale_y_discrete(expand=c(0,0)) +
     scale_fill_gradient2(low=low, mid=mid, high=high, midpoint=midpoint,
                          space="Lab", na.value="transparent",
-                         limits=lim, breaks = breaks) +
+                         limits=lim, breaks=breaks) +
     xlab(xlabel) +
     ylab(ylabel)
 
@@ -84,27 +59,43 @@ draw_heatmap <- function(sym.matrix, fill.name="Value", xlabel="", ylabel="", li
   return(plt)
 }
 
+massage_data <- function(sym.matrix, pyramid, fill.name){
+	sym.matrix <- unname(sym.matrix)	# strip rownames and colnames so melt doesn't use them
+  number.of.experiments <- dim(sym.matrix)[2]
+  # to remove the redundancy in the heatmap, set all cells in matrix under the diagonal
+  # to NA
+  if (pyramid == TRUE) {
+    # check if matrix is symmetric
+    if(!all(sym.matrix == t(sym.matrix))){
+      stop("The matrix is not symmetric!")
+    }
 
+    #if matrix is symmetric, then remove the redundant triangle of the matrix by setting to NA
+		sym.matrix[lower.tri(sym.matrix)] <- NA
+  }
+
+  #reshape the matrix to get row/column pairs and their value (Note: dataframes will not work as expected
+  # of matrices here)
+  overlap.melted <- reshape2::melt(sym.matrix, value.name=fill.name)
+	return(overlap.melted)
+}
+
+#'  Make the pine plot for a list of heatmaps and organize in a stacked, pine tree shape.
+#'
+#'  @param h_maps List of heat maps to add to a pineplot.
+#'  @param num_heatmaps The total number of heat maps to add to pine plot.
+#'  @param height The height of the file to start plotting the heat maps.
+#'  @param legend Boolean indicating if plots have a legend.
+#'  @param angle angle to rotate each heat map.
+#'  @param legend_x_offset Depending on label size and length, may want to adjust position of the legend using offset.
+#'  @param legend_y_offset Depending on label size and length, may want to adjust the y position of the pine plot.
+#'  @param hm_y_offset Changes the y posiiton of heatmap shifting them higher or lower in the viewport.
+#'  @param hm_margin Changes the space left between the heat maps if they need to be closer or farther appart for athstetic purpose.
+#'  @return Pine plot written to view or a file if open. No return object.
+#'  @export
 write_pine_plot <- function(h_maps,num_heatmaps=length(h_maps), height=30, width=10, leg=FALSE,
                             angle = c(-45), legend_x_offset=0.02, legend_y_offset=0, hm_y_offset=0,
                             hm_margin=0){
-  #'  Build a pine plot
-  #'
-  #'  Make the pine plot for a list of heatmaps and organize in a stacked, pine tree shape.
-  #'
-  #'  @param h_maps List of heat maps to add to a pineplot.
-  #'  @param num_heatmaps The total number of heat maps to add to pine plot.
-  #'  @param height The height of the file to start plotting the heat maps.
-  #'  @param legend Boolean indicating if plots have a legend.
-  #'  @param angle angle to rotate each heat map.
-  #'  @param legend_x_offset Depending on label size and length, may want to adjust position of the legend using offset.
-  #'  @param legend_y_offset Depending on label size and length, may want to adjust the y position of the pine plot.
-  #'  @param hm_y_offset Changes the y posiiton of heatmap shifting them higher or lower in the viewport.
-  #'  @param hm_margin Changes the space left between the heat maps if they need to be closer or farther appart for athstetic purpose.
-  #'
-  #'  @return Pine plot written to view or a file if open. No return object.
-  #'
-
   #check if the number of heatmaps is or num_heatmaps empty
   if(num_heatmaps < 1 | length(h_maps) == 0){
     stop("Heatmaps required.")
@@ -167,35 +158,26 @@ write_pine_plot <- function(h_maps,num_heatmaps=length(h_maps), height=30, width
     grid.draw(hm)
     #return to the original viewport (height x width)
     upViewport()
-
   }
-
 }
 
-
-
-
+#'  Make the pine plot for a list of heatmaps and organize in a stacked, pine tree shape.
+#'
+#'  @param h_maps List of heat maps to add to a pineplot.
+#'  @param num_heatmaps The total number of heat maps to add to pine plot.
+#'  @param height The height of the file to start plotting the heat maps.
+#'  @param legend Boolean indicating if plots have a legend.
+#'  @param angle angle to rotate each heat map.
+#'  @param legend_x_offset Depending on label size and length, may want to adjust position of the legend using offset.
+#'  @param legend_y_offset Depending on label size and length, may want to adjust the y position of the pine plot.
+#'  @param hm_y_offset Changes the y posiiton of heatmap shifting them higher or lower in the viewport.
+#'  @param hm_margin Changes the space left between the heat maps if they need to be closer or farther appart for athstetic purpose.
+#'  @return Pine plot written to view or a file if open. No return object.
+#'  @export
 write_pine_plot <- function(h_maps, width = 10,
                             angle = c(-45),
                             hm_margin=0, ncols=1,
                             nrows=3, path_name){
-  #'  Build a pine plot
-  #'
-  #'  Make the pine plot for a list of heatmaps and organize in a stacked, pine tree shape.
-  #'
-  #'  @param h_maps List of heat maps to add to a pineplot.
-  #'  @param num_heatmaps The total number of heat maps to add to pine plot.
-  #'  @param height The height of the file to start plotting the heat maps.
-  #'  @param legend Boolean indicating if plots have a legend.
-  #'  @param angle angle to rotate each heat map.
-  #'  @param legend_x_offset Depending on label size and length, may want to adjust position of the legend using offset.
-  #'  @param legend_y_offset Depending on label size and length, may want to adjust the y position of the pine plot.
-  #'  @param hm_y_offset Changes the y posiiton of heatmap shifting them higher or lower in the viewport.
-  #'  @param hm_margin Changes the space left between the heat maps if they need to be closer or farther appart for athstetic purpose.
-  #'
-  #'  @return Pine plot written to view or a file if open. No return object.
-  #'
-
   #store one heatmap in list (h_maps) with hm
   hm <- c()
   w <- width - (2*hm_margin)
