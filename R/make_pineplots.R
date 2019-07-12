@@ -85,7 +85,7 @@ massage_data <- function(sym.matrix, pyramid, fill.name){
 #'  @param h_maps List of heat maps to add to a pineplot.
 #'  @param num_heatmaps The total number of heat maps to add to pine plot.
 #'  @param height The height of the file to start plotting the heat maps.
-#'  @param legend Boolean indicating if plots have a legend.
+#'  @param leg Boolean indicating if plots have a legend.
 #'  @param angle angle to rotate each heat map.
 #'  @param legend_x_offset Depending on label size and length, may want to adjust position of the legend using offset.
 #'  @param legend_y_offset Depending on label size and length, may want to adjust the y position of the pine plot.
