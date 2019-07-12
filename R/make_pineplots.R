@@ -174,7 +174,7 @@ write_pine_plot <- function(h_maps,num_heatmaps=length(h_maps), height=30, width
 #'  @param hm_margin Changes the space left between the heat maps if they need to be closer or farther appart for athstetic purpose.
 #'  @return Pine plot written to view or a file if open. No return object.
 #'  @export
-write_pine_plot <- function(h_maps, width = 10,
+write_pine_plot.2 <- function(h_maps, width = 10,
                             angle = c(-45),
                             hm_margin=0, ncols=1,
                             nrows=3, path_name){
