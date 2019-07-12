@@ -36,7 +36,6 @@ extract.tissue.species.profile <- function(tissue_specific_genes, grp){
   # B represents brain samples in tissue_specific_genes
   # K represents kidney samples
   # L represents liver samples
-  stopifnot(tissue %in% c("B", "K", "L"))
   mouse <- 1:12
   chicken <- 13:24
   macaque <- 25:37
@@ -223,6 +222,7 @@ for(tissue in c("L", "K", "B")){
   out.dir <- "~/"
   out.file.address <- paste(out.dir, "pineplot_", tissue, ".pdf",sep="")
   build.tissue.pineplot(eval(parse(text=paste0("layers_",tissue,sep=""))),tissue, out.file.address)
+}
 ```
 
 ### Pine plot figure
