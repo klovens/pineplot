@@ -18,4 +18,5 @@
 #' @name pineplot
 NULL
 
-## NULL
+#' @import ggplot2
+NULL
