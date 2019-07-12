@@ -16,8 +16,10 @@ Imports:
   grid,
   gridExtra (>= 2.3),
   reshape2 (>= 1.4.3)
-Suggests: knitr,
+Suggests: 
+    knitr,
     magick,
     rmarkdown,
-    testthat
+    testthat (>= 2.1.0)
 VignetteBuilder: knitr
+RoxygenNote: 6.1.1
