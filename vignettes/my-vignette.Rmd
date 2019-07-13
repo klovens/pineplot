@@ -164,9 +164,7 @@ Since we want to customize every heatmap for the pine plot in the same manner, w
 custom_layer <- function(ggplt.heatmap, image.address, tissue){
   stopifnot(require("magick"))
   img <- image_read(image.address)
-  # img <- image_read_svg(image.address)
   img <- image_rotate(img, -45)
-  # png::writePNG(img, "bitmap.png")
   img <- rasterGrob(img, interpolate=TRUE)
   
   ggplt.object <- ggplt.heatmap +
@@ -208,9 +206,9 @@ customize_layers <- function(layer.heatmaps, species.images.address, tissue){
 ###############################################################################
 
 build.tissue.pineplot <- function(layers,tissue, out.file.address){
-  chicken.img.address <- "./data/chicken.png"
-  mouse.img.address <- "./data/mouse.png"
-  macaque.img.address <- "./data/macaque.png"
+  chicken.img.address <- "./images/chicken.png"
+  mouse.img.address <- "./images/mouse.png"
+  macaque.img.address <- "./images/macaque.png"
   species.images.address <- list("chicken"=chicken.img.address,
                                  "mouse"=mouse.img.address, 
                                  "macaque"=macaque.img.address)
