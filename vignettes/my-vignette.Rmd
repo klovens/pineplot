@@ -160,7 +160,7 @@ ggplt.object <- ggplt.object + geom_polygon(data=area.of.interest,
 
 Since we want to customize every heatmap for the pine plot in the same manner, we write functions to make this process easier before calling the `write_pine_plot` function to stack these images into a pdf file.
 
-```
+```{r}
 custom_layer <- function(ggplt.heatmap, image.address, tissue){
   stopifnot(require("magick"))
   img <- image_read(image.address)
