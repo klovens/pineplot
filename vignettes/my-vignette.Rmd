@@ -162,15 +162,15 @@ Since we want to customize every heatmap for the pine plot in the same manner, w
 
 ```{r}
 custom_layer <- function(ggplt.heatmap, image.address, tissue){
-  stopifnot(require("magick"))
   img <- image_read(image.address)
+  img <- image_background(img, "none")
   img <- image_rotate(img, -45)
   img <- rasterGrob(img, interpolate=TRUE)
   
   ggplt.object <- ggplt.heatmap +
     theme(plot.margin = unit(c(0,0,0,9), "lines"),
           axis.text=element_text(colour=c(rep("royalblue1", 10), rep("black", 5))) ) +
-    annotation_custom(grob=img, xmin=-8, xmax=-2, ymin=5, ymax=11)
+    annotation_custom(grob=img, xmin=-6, xmax=0, ymin=5, ymax=11)
   if(tissue %in% c("K", "Kidney", "kidney")){
     area.of.interest <- data.frame(x = c(10.50, 11.50, 15.5, 15.50, 10.5, 10.50 ),
                                    y=c(10.50, 10.50, 14.50, 15.55, 15.55, 10.5))
@@ -196,9 +196,7 @@ custom_layer <- function(ggplt.heatmap, image.address, tissue){
 customize_layers <- function(layer.heatmaps, species.images.address, tissue){
   all.species <- c("chicken", "mouse", "macaque")
   for(species in all.species){
-    layer.heatmaps[[species]] <- custom_layer(layer.heatmaps[[species]],
-                                                 species.images.address[[species]],
-                                                 tissue)
+    layer.heatmaps[[species]] <- custom_layer(layer.heatmaps[[species]], species.images.address[[species]], tissue)
   }
   return(layer.heatmaps)
 }
@@ -223,7 +221,7 @@ build.tissue.pineplot <- function(layers,tissue, out.file.address){
 
 # make the pine plots
 for(tissue in c("L", "K", "B")){
-  out.dir <- "~/"
+  out.dir <- "./images/"
   out.file.address <- paste(out.dir, "pineplot_", tissue, ".pdf",sep="")
   build.tissue.pineplot(eval(parse(text=paste0("layers_",tissue,sep=""))),tissue, out.file.address)
 }
@@ -231,9 +229,9 @@ for(tissue in c("L", "K", "B")){
 
 ### Pine plot figure
 
-![](images/pineplot_liver.jpg){ width=30% }
-![](images/pineplot_kidney.jpg){ width=30% }
-![](images/pineplot_brain.jpg){ width=30% }
+![](./images/pineplot_L.pdf){ width=30% }
+![](./images/pineplot_B.pdf){ width=30% }
+![](./images/pineplot_K.pdf){ width=30% }
 
 
 
