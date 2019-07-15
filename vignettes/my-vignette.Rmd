@@ -94,7 +94,6 @@ gene.specific.layers <- function(tissue_specific_genes, tissue, max.expression){
 }
 
 layers <-  gene.specific.layers(tissue_specific_genes, "L", max.expression)
-
 ```
 
 The symmetric matrices for all the tissues can be loaded for convenience. Each list is denoted with the tissue type. For example, the list containing symmetric matrices for liver tissue are contained in the list named "layers_L".
@@ -148,7 +147,6 @@ ggplt.object <- ggplt.object + geom_polygon(data=area.of.interest,
                                             size=.8,
                                             linetype="dashed",
                                             fill=NA)
-
 ```
 
 ### Mouse ggplot2 customized heat map
