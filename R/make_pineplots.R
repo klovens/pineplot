@@ -176,28 +176,14 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
   }
 }
 
-generate_pineplot <- function(sym_matrices, filename, width, height, customize_fn, ...){
+generate_pineplot <- function(sym_matrices, filename, width=10, height=30, customize_fn, ...){
   heatmaps <- lapply(sym_matrices, draw_heatmap, legend=FALSE, ...)
   if (!missing(customize_fn)){
     heatmaps <- lapply(heatmaps, customize_fn)
   }
-  if (missing(height)){
-    height = unit(2.5 * length(sym_matrices), "in")
-  }
-  if (missing(width)){
-    width = unit(1.4 * height[[1]] / length(sym_matrices), attr(u, "unit"))
-  }
-
-  plot_dev(NULL, filename)(filename, width=width, height=height)
-  pushViewport(viewport(width=width, height=height, layout=grid.layout(length(heatmaps),1)))
-  for (i in 1:length(heatmaps)){
-    pushViewport(viewport(layout.pos.row=i, layout.pos.col=1))
-    pushViewport(viewport(y=0.3 * width, width=width, height=0.8 * width, angle=-45))
-    grid.rect()
-    print(heatmaps[[i]], newpage=FALSE)
-    upViewport()
-    upViewport()
-  }
+  dev <- plot_dev(NULL, filename=filename)
+  dev(filename, width, height)
+  write_pine_plot(heatmaps, height=height, width=width, leg=TRUE)
   dev.off()
 }
 
