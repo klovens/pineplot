@@ -30,21 +30,25 @@ draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = 
     theme(
       panel.background = element_blank(),
       plot.background = element_blank(),
+      plot.margin = margin(0, 0, 0, 0, 'null'),
+      panel.margin = unit(0, 'null'),
       axis.text = element_text(color = "gray15", angle = 0),
       axis.text.x = element_text(angle = 90),
       axis.title = element_text(color = "gray15"),
       axis.ticks = element_blank(),
+      axis.ticks.length = unit(0, 'null'),
+      axis.ticks.margin = unit(0, 'null'),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       text = element_text(size = text_size)
     ) +
-    coord_equal(clip = "off") +
+    coord_equal(expand=FALSE, clip = "off") +
     scale_x_discrete(expand = c(0, 0), position = "top") +
     scale_y_discrete(expand = c(0, 0)) +
     scale_fill_gradient2(
       low = low, mid = mid, high = high, midpoint = midpoint,
       space = "Lab", na.value = "transparent",
-      limits = lim, breaks = breaks
+      limits = lim, breaks = breaks, guide=FALSE
     ) +
     xlab(xlabel) +
     ylab(ylabel)
@@ -174,4 +178,70 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
     # return to the original viewport (height x width)
     upViewport()
   }
+}
+
+generate_pineplot <- function(sym_matrices, filename, width, height, customize_fn, ...){
+  heatmaps <- lapply(sym_matrices, draw_heatmap, legend=FALSE, ...)
+  if (!missing(customize_fn)){
+    heatmaps <- lapply(heatmaps, customize_fn)
+  }
+  if (missing(height)){
+    height = unit(2.5 * length(sym_matrices), "in")
+  }
+  if (missing(width)){
+    width = unit(1.4 * height[[1]] / length(sym_matrices), attr(u, "unit"))
+  }
+
+  plot_dev(NULL, filename)(filename, width=width, height=height)
+  pushViewport(viewport(width=width, height=height, layout=grid.layout(length(heatmaps),1)))
+  for (i in 1:length(heatmaps)){
+    pushViewport(viewport(layout.pos.row=i, layout.pos.col=1))
+    pushViewport(viewport(y=0.3 * width, width=width, height=0.8 * width, angle=-45))
+    grid.rect()
+    print(heatmaps[[i]], newpage=FALSE)
+    upViewport()
+    upViewport()
+  }
+  dev.off()
+}
+
+plot_dev <- function(device, filename = NULL, dpi = 300) {
+  force(filename)
+  force(dpi)
+
+  if (is.function(device))
+    return(device)
+
+  eps <- function(filename, ...) {
+    grDevices::postscript(file = filename, ..., onefile = FALSE, horizontal = FALSE,
+                          paper = "special")
+  }
+  devices <- list(
+    eps =  eps,
+    ps =   eps,
+    tex =  function(filename, ...) grDevices::pictex(file = filename, ...),
+    pdf =  function(filename, ..., version = "1.4") grDevices::pdf(file = filename, ..., version = version),
+    svg =  function(filename, ...) svglite::svglite(file = filename, ...),
+    emf =  function(...) grDevices::win.metafile(...),
+    wmf =  function(...) grDevices::win.metafile(...),
+    png =  function(...) grDevices::png(..., res = dpi, units = "in"),
+    jpg =  function(...) grDevices::jpeg(..., res = dpi, units = "in"),
+    jpeg = function(...) grDevices::jpeg(..., res = dpi, units = "in"),
+    bmp =  function(...) grDevices::bmp(..., res = dpi, units = "in"),
+    tiff = function(...) grDevices::tiff(..., res = dpi, units = "in")
+  )
+
+  if (is.null(device)) {
+    device <- tolower(tools::file_ext(filename))
+  }
+
+  if (!is.character(device) || length(device) != 1) {
+    stop("`device` must be NULL, a string or a function.", call. = FALSE)
+  }
+
+  dev <- devices[[device]]
+  if (is.null(dev)) {
+    stop("Unknown graphics device '", device, "'", call. = FALSE)
+  }
+  dev
 }
