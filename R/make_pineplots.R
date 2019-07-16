@@ -30,25 +30,21 @@ draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = 
     theme(
       panel.background = element_blank(),
       plot.background = element_blank(),
-      plot.margin = margin(0, 0, 0, 0, 'null'),
-      panel.margin = unit(0, 'null'),
       axis.text = element_text(color = "gray15", angle = 0),
       axis.text.x = element_text(angle = 90),
       axis.title = element_text(color = "gray15"),
       axis.ticks = element_blank(),
-      axis.ticks.length = unit(0, 'null'),
-      axis.ticks.margin = unit(0, 'null'),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       text = element_text(size = text_size)
     ) +
-    coord_equal(expand=FALSE, clip = "off") +
+    coord_equal(clip = "off") +
     scale_x_discrete(expand = c(0, 0), position = "top") +
     scale_y_discrete(expand = c(0, 0)) +
     scale_fill_gradient2(
       low = low, mid = mid, high = high, midpoint = midpoint,
       space = "Lab", na.value = "transparent",
-      limits = lim, breaks = breaks, guide=FALSE
+      limits = lim, breaks = breaks
     ) +
     xlab(xlabel) +
     ylab(ylabel)
