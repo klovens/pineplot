@@ -26,3 +26,6 @@ NULL
 
 #' @import grid
 NULL
+
+#' @import gtable
+NULL

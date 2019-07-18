@@ -167,7 +167,7 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
     upViewport()
   }
 }
-library(gtable) # TODO
+
 generate_pineplot <- function(sym_matrices, filename, height, customize_fn, ...){
   if (length(sym_matrices) == 0) {
     stop("ERROR: No symmetric matrices provided.")
