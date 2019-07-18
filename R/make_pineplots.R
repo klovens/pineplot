@@ -23,37 +23,25 @@ draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = 
   overlap.melted <- massage_data(sym.matrix, pyramid, fill.name)
   # use ggplot2 to visualize create a ggplot2 object
   plt <- ggplot(
-    data = overlap.melted,
-    mapping = aes(x = Var1, y = Var2, fill = Value)
+    overlap.melted,
+    aes(x = Var1, y = Var2, fill = Value)
   ) +
     geom_tile() +
-    theme(
-      panel.background = element_blank(),
-      plot.background = element_blank(),
-      plot.margin = margin(0, 0, 0, 0, 'null'),
-      panel.margin = unit(0, 'null'),
-      axis.text = element_text(color = "gray15", angle = 0),
-      axis.text.x = element_text(angle = 90),
-      axis.title = element_text(color = "gray15"),
-      axis.ticks = element_blank(),
-      axis.ticks.length = unit(0, 'null'),
-      axis.ticks.margin = unit(0, 'null'),
-      panel.grid.major = element_blank(),
-      panel.grid.minor = element_blank(),
-      text = element_text(size = text_size)
-    ) +
     coord_equal(expand=FALSE, clip = "off") +
-    scale_x_discrete(expand = c(0, 0), position = "top") +
-    scale_y_discrete(expand = c(0, 0)) +
+    scale_x_continuous(expand = c(0, 0), position = "top") +
+    scale_y_continuous(expand = c(0, 0)) +
     scale_fill_gradient2(
-      low = low, mid = mid, high = high, midpoint = midpoint,
-      space = "Lab", na.value = "transparent",
-      limits = lim, breaks = breaks, guide=FALSE
+     low = low, mid = mid, high = high, midpoint = midpoint,
+     space = "Lab", na.value = "transparent",
+     limits = lim, breaks = breaks, guide=FALSE
     ) +
-    xlab(xlabel) +
-    ylab(ylabel)
+    theme(
+      plot.margin = margin(0, 0, 0, 0, "null")
+    )
+    #xlab(xlabel) +
+    #ylab(ylabel)
 
-  # If a legend should be included, add it to the plt ggplot2 object
+  #If a legend should be included, add it to the plt ggplot2 object
   if (legend == TRUE) {
     plt <- plt +
       guides(fill = guide_colorbar(
@@ -179,26 +167,49 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
     upViewport()
   }
 }
-
-generate_pineplot <- function(sym_matrices, filename, width, height, customize_fn, ...){
+library(gtable) # TODO
+generate_pineplot <- function(sym_matrices, filename, height, customize_fn, ...){
+  if (length(sym_matrices) == 0) {
+    stop("ERROR: No symmetric matrices provided.")
+  }
+  # TODO: check that the matrices are symmetric
+  if (0) {
+    stop("ERROR: Matrices provided are not symmetric.")
+  }
   heatmaps <- lapply(sym_matrices, draw_heatmap, legend=FALSE, ...)
   if (!missing(customize_fn)){
     heatmaps <- lapply(heatmaps, customize_fn)
   }
   if (missing(height)){
-    height = unit(2.5 * length(sym_matrices), "in")
+    pheight_in <- 2.5
+  } else {
+    pheight_in <- height / length(sym_matrices)
   }
-  if (missing(width)){
-    width = unit(1.4 * height[[1]] / length(sym_matrices), attr(u, "unit"))
-  }
+  height_in <- pheight_in * length(sym_matrices)
+  pheight <- unit(pheight_in, "in")
+  height <- unit(height_in, "in")
+  width_in <- 2 * pheight_in
+  width <- unit(width_in, "in")
 
-  plot_dev(NULL, filename)(filename, width=width, height=height)
-  pushViewport(viewport(width=width, height=height, layout=grid.layout(length(heatmaps),1)))
+  # calculate plot dimensions
+  grob <- ggplotGrob(heatmaps[[1]])
+  extra_width = convertWidth(gtable_width(grob), unitTo="in")
+  extra_height = convertHeight(gtable_height(grob), unitTo="in")
+  scaling_factor = sqrt(2)
+
+  pdf(filename, width=width_in, height=1.05*height_in)
+  pushViewport(viewport(width=width, height=1.05 * height))
+  pushViewport(viewport(width=width, height=height, layout=grid.layout(length(heatmaps),1),
+               just="top", y=unit(1, "npc")))
   for (i in 1:length(heatmaps)){
     pushViewport(viewport(layout.pos.row=i, layout.pos.col=1))
-    pushViewport(viewport(y=0.3 * width, width=width, height=0.8 * width, angle=-45))
-    grid.rect()
+    # DEBUG: grid.rect()
+    pushViewport(viewport(y=unit(0.0, "npc"), width=scaling_factor, height=scaling_factor, angle=-45))
+    # DEBUG: grid.rect(gp=gpar(col="red"))
+    pushViewport(viewport(x=unit(0.5, "npc")-0.5*extra_width, y=unit(0.5, "npc")+0.5*extra_height))
+    # DEBUG: grid.rect(gp=gpar(col="blue"))
     print(heatmaps[[i]], newpage=FALSE)
+    upViewport()
     upViewport()
     upViewport()
   }
