@@ -1,0 +1,66 @@
+---
+title: "Another example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{another_example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(pineplot)
+library(grid)
+```
+
+# Loading the Data
+
+For this example we will be using the Cleveland heart disease dataset. The dataset contains 14 attributes (as columns) across 303 subjects (as rows). The attributes were selected for their relevance to heart disease and include variables such as age, sex, cholesteral level, and maximum heart rate achieved.
+
+```{r}
+data("heart")
+colnames(heart)
+attr(heart, "format") # column information
+```
+
+# Preprocessing
+
+We will be examining the interaction between XXX when controlling for the factors of sex and age. Levels for the sex attribute are already defined (1 = male; 0 = female). For the age attribute we define 3 levels (i.e. age groups) using the `cut` function. The dataframe is then partitioned by sex and age and correlation matrices are calculated for each partition.
+
+```{r}
+heart['age'] <- cut(heart[['age']], 3)
+heart_mat <- heart[c('trestbps', 'chol', 'fbs', 'restecg', 'thalach')]
+heart_subsets <- split(heart_mat, list(heart$sex, heart$age))
+heart_subsets <- lapply(heart_subsets, cor)
+```
+
+# Annotation Functions
+
+```{r}
+add_label <- function(panel, name){
+  text <- paste0('Age:\n', sub('.*\\.', '', name))
+  grid.text(text, x=0.1, y=.5, just='left')
+}
+```
+
+# Pineplot generation
+
+Now we
+
+```{r echo=FALSE, fig.height=7, fig.width=8, out.width='100%'}
+pushViewport(viewport(layout=grid.layout(1, 2)))
+for (sex in c(0, 1)){
+  pushViewport(viewport(layout.pos.row = 1, layout.pos.col = sex+1))
+  sex_indices <- as.numeric(sub('\\..*', '', names(heart_subsets)))
+  heart_by_sex <- heart_subsets[which(sex_indices==sex)]
+  generate_pineplot(heart_by_sex, filename=paste0('images/sex-', sex, '_pineplot.pdf'),
+                    customize_fn = add_label)
+  upViewport()
+}
+```
