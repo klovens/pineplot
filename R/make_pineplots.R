@@ -19,27 +19,33 @@
 #'  @export
 draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = "", lim = NULL,
                          pyramid = TRUE, breaks = waiver(), midpoint = 0, barwidth = 5, barheight = 1,
-                         text_size = 8, direction = "horizontal", legend = TRUE, low = "blue", mid = "white", high = "red") {
+                         text_size = 8, direction = "horizontal", legend = TRUE, low = "blue", mid = "white", high = "red",
+                         annotation_hook, annotation_arg_list) {
   overlap.melted <- massage_data(sym.matrix, pyramid, fill.name)
   # use ggplot2 to visualize create a ggplot2 object
   plt <- ggplot(
     overlap.melted,
-    aes(x = Var1, y = Var2, fill = Value)
+    aes(x = factor(Var1), y = factor(Var2), fill = Value)
   ) +
     geom_tile() +
     coord_equal(expand=FALSE, clip = "off") +
-    scale_x_continuous(expand = c(0, 0), position = "top") +
-    scale_y_continuous(expand = c(0, 0)) +
+    scale_x_discrete(labels=rownames(sym.matrix), expand = c(0, 0), position = "top") +
+    scale_y_discrete(labels=rownames(sym.matrix), expand = c(0, 0)) +
     scale_fill_gradient2(
      low = low, mid = mid, high = high, midpoint = midpoint,
      space = "Lab", na.value = "transparent",
      limits = lim, breaks = breaks, guide=FALSE
     ) +
     theme(
-      plot.margin = margin(0, 0, 0, 0, "null")
+      plot.margin = margin(0, 0, 0, 0, "null"),
+      panel.grid.major = element_blank(),
+      panel.grid.minor = element_blank(),
+      panel.background = element_rect(fill = "transparent",colour = NA),
+      plot.background = element_rect(fill = "transparent",colour = NA),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(angle = 90, hjust = 0)
     )
-    #xlab(xlabel) +
-    #ylab(ylabel)
 
   #If a legend should be included, add it to the plt ggplot2 object
   if (legend == TRUE) {
@@ -55,6 +61,10 @@ draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = 
           size = 6, colour = "gray15"
         )
       ))
+  }
+
+  if (!missing(annotation_hook)){
+    plt <- annotation_hook(plt, annotation_arg_list)
   }
 
   return(plt)
@@ -168,7 +178,18 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
   }
 }
 
-generate_pineplot <- function(sym_matrices, filename, height, customize_fn, ...){
+#' Generate a pineplot.
+#'
+#' @export
+generate_pineplot <- function(sym_matrices,
+                              filename,
+                              height=dev.size()[2],
+                              annotation_fn,
+                              annotation_fn_args,
+                              customize_fn,
+                              customize_fn_args,
+                              scale = 0.9,
+                              ...) {
   if (length(sym_matrices) == 0) {
     stop("ERROR: No symmetric matrices provided.")
   }
@@ -176,44 +197,51 @@ generate_pineplot <- function(sym_matrices, filename, height, customize_fn, ...)
   if (0) {
     stop("ERROR: Matrices provided are not symmetric.")
   }
-  heatmaps <- lapply(sym_matrices, draw_heatmap, legend=FALSE, ...)
-  if (!missing(customize_fn)){
-    heatmaps <- lapply(heatmaps, customize_fn)
+  heatmaps <- lapply(sym_matrices,
+                     draw_heatmap,
+                     legend=FALSE,
+                     ...)
+  if (!missing(annotation_fn)){
+    heatmaps <- sapply(names(heatmaps), function(k){
+      return(annotation_fn(heatmaps[[k]], k))
+    }, simplify=FALSE, USE.NAMES = TRUE)
   }
-  if (missing(height)){
-    pheight_in <- 2.5
-  } else {
-    pheight_in <- height / length(sym_matrices)
-  }
-  height_in <- pheight_in * length(sym_matrices)
-  pheight <- unit(pheight_in, "in")
-  height <- unit(height_in, "in")
-  width_in <- 2 * pheight_in
-  width <- unit(width_in, "in")
 
-  # calculate plot dimensions
+  page_height <- unit(height, 'in')
+  height <- convertUnit(page_height - unit(1.5, 'in'), 'in')  # for legend
+  panel_height <- unit(as.numeric(height)/length(sym_matrices), 'in')
+  width <- 2 * panel_height
+
+  # calculate dimensions
   grob <- ggplotGrob(heatmaps[[1]])
-  extra_width = convertWidth(gtable_width(grob), unitTo="in")
-  extra_height = convertHeight(gtable_height(grob), unitTo="in")
-  scaling_factor = sqrt(2)
-
-  pdf(filename, width=width_in, height=1.05*height_in)
-  pushViewport(viewport(width=width, height=1.05 * height))
+  extra_width = convertWidth(sum(grob$widths), unitTo="in")
+  extra_height = convertHeight(sum(grob$width), unitTo="in")
+  scaling_factor = sqrt(2) * scale
+  # extract legend
+  grob <- ggplotGrob(heatmaps[[1]] + guides(fill = guide_colorbar(direction = "horizontal", title.position = "top", title.hjust=.5)))
+  legend <- grob$grobs[[which(sapply(grob$grobs, function(x) x$name) == "guide-box")]]
+  legend_height <- convertHeight(sum(legend$heights), unitTo='in')
   pushViewport(viewport(width=width, height=height, layout=grid.layout(length(heatmaps),1),
                just="top", y=unit(1, "npc")))
+  # DEBUG: grid.rect()
   for (i in 1:length(heatmaps)){
     pushViewport(viewport(layout.pos.row=i, layout.pos.col=1))
+    if (!missing(customize_fn)){
+      customize_fn(heatmaps[[i]], names(heatmaps)[[i]])
+    }
     # DEBUG: grid.rect()
     pushViewport(viewport(y=unit(0.0, "npc"), width=scaling_factor, height=scaling_factor, angle=-45))
     # DEBUG: grid.rect(gp=gpar(col="red"))
     pushViewport(viewport(x=unit(0.5, "npc")-0.5*extra_width, y=unit(0.5, "npc")+0.5*extra_height))
     # DEBUG: grid.rect(gp=gpar(col="blue"))
     print(heatmaps[[i]], newpage=FALSE)
-    upViewport()
-    upViewport()
-    upViewport()
+    upViewport(3)
   }
-  dev.off()
+  upViewport()
+  pushViewport(viewport(y=0, height=legend_height, just="bottom"))
+  grid.draw(legend)
+  upViewport()
+  # DEBUG: grid.rect()
 }
 
 plot_dev <- function(device, filename = NULL, dpi = 300) {
