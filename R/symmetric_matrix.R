@@ -1,14 +1,14 @@
+#' Function that calculates the mutual expression between genes in a expression table.
+#'
+#' @param exp_matrix The expression matrix where rows are the genes
+#' and columns are the samples/observations.
+#' @param max.expression is the maximum average value to normalize the average values
+#' of variables in exp_matrix.
+#'
+#' @return A symmetric matrix, \code{sym_mat}, that contains mutual expression value
+#' between 0 and 1 to symbolize relationship between variable x and variable y.
+#' @export
 symmetric_matrix_generator <- function(exp_matrix, max.expression) {
-  #' Function that calculates the mutual expression between genes in a expression table.
-  #'
-  #' @param exp_matrix The expression matrix where rows are the genes
-  #' and columns are the samples/observations.
-  #' @param max.expression is the maximum average value to normalize the average values
-  #' of variables in exp_matrix.
-  #'
-  #' @return A symmetric matrix, \code{sym_mat}, that contains mutual expression value
-  #' between 0 and 1 to symbolize relationship between variable x and variable y.
-
   # extract the rownames of the expression matrix
   rows <- rownames(exp_matrix)
   cols <- rows
