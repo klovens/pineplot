@@ -29,7 +29,6 @@
 #' macaque.profile <- tissue_specific_genes[, macaque][, which(maca_grp == "L")]
 "tissue_specific_genes"
 
-
 #' Lists of example symmetric matrices.
 #'
 #' A dataset containing the mutual expression values between
@@ -45,3 +44,13 @@
 #'   ...
 #' }
 "layers"
+
+#' Mergin and Brawand gene expression dataset
+#'
+#' A description.
+"merkin_brawand_rnaseq"
+
+#' Cleveland heart disease dataset
+#'
+#' A description.
+"heart"

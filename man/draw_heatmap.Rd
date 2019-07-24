@@ -5,27 +5,45 @@
 \title{Plots a heatmap of a symmetric matrix.}
 \usage{
 draw_heatmap(sym.matrix, fill.name = "Value", xlabel = "",
-  ylabel = "", lim = NULL, pyramid = TRUE, breaks = waiver(),
-  midpoint = 0, barwidth = 5, barheight = 1, text_size = 8,
+  ylabel = "", limits = NULL, pyramid = TRUE, breaks = waiver(),
+  midpoint = 0, barwidth = 5, barheight = 1,
   direction = "horizontal", legend = TRUE, low = "blue",
   mid = "white", high = "red")
 }
+\arguments{
+\item{sym.matrix}{A matrix of symmetric values indicating a relationship between variables of the rows/columns.}
+
+\item{fill.name}{Name of values in the symmetric matrix.}
+
+\item{xlabel}{Label to include on x-axis.}
+
+\item{ylabel}{Label to include on y-axis.}
+
+\item{limits}{Limits of the fill values.}
+
+\item{pyramid}{Boolean indicates lower triangle of the heamap be removed (TRUE) or not (FALSE).}
+
+\item{breaks}{Number of break points in the legend (if legend included).}
+
+\item{midpoint}{The midpoint of the legend scale (if legend included).}
+
+\item{barwidth}{Width of the legend (if legend included).}
+
+\item{barheight}{Height of the legend (if legend included).}
+
+\item{direction}{Legend direction either "vertical" or "horizontal".}
+
+\item{legend}{Boolean value indicating whether or not to include a legend for the plot.}
+
+\item{low}{Lower colour for fill gradient.}
+
+\item{mid}{Midpoint colour for fill gradient.}
+
+\item{high}{Higher colour for fill gradient.}
+}
+\value{
+A ggplot heatmap object that can be further manipulated using ggplot components if necessary.
+}
 \description{
-@param sym.matrix A matrix of symmetric values indicating a relationship between variables of the rows/columns.
- @param fill.name Name of values in the symmetric matrix.
- @param xlabel Label to include on x-axis.
- @param ylabel Label to include on y-axis.
- @param lim Limits of the fill values.
- @param pyramid Boolean indicates lower triangle of the heamap be removed (TRUE) or not (FALSE).
- @param breaks Number of break points in the legend (if legend included).
- @param midpoint The midpoint of the legend scale (if legend included).
- @param barwidth Width of the legend (if legend included).
- @param barheight Height of the legend (if legend included).
- @param direction Legend direction either "vertical" or "horizontal".
- @param legend Boolean value indicating whether or not to include a legend for the plot.
- @return A ggplot heatmap object that can be further manipulated using ggplot components if necessary.
- @examples
- draw_heatmap(matrix(c(2,1,0,3,0,1,0,3,2),3,3), lim=c(0,3),breaks=c(0,1.5,3),midpoint=1.5)
- draw_heatmap(matrix(c(-0.5,1,0,0.75,0,1,0,0.75,-0.5),3,3))
- @export
+Plots a heatmap of a symmetric matrix.
 }

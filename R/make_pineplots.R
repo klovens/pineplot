@@ -1,55 +1,52 @@
-#'  Plots a heatmap of a symmetric matrix.
+#' Plots a heatmap of a symmetric matrix.
 #'
-#'  @param sym.matrix A matrix of symmetric values indicating a relationship between variables of the rows/columns.
-#'  @param fill.name Name of values in the symmetric matrix.
-#'  @param xlabel Label to include on x-axis.
-#'  @param ylabel Label to include on y-axis.
-#'  @param lim Limits of the fill values.
-#'  @param pyramid Boolean indicates lower triangle of the heamap be removed (TRUE) or not (FALSE).
-#'  @param breaks Number of break points in the legend (if legend included).
-#'  @param midpoint The midpoint of the legend scale (if legend included).
-#'  @param barwidth Width of the legend (if legend included).
-#'  @param barheight Height of the legend (if legend included).
-#'  @param direction Legend direction either "vertical" or "horizontal".
-#'  @param legend Boolean value indicating whether or not to include a legend for the plot.
-#'  @return A ggplot heatmap object that can be further manipulated using ggplot components if necessary.
-#' @examples
-#' draw_heatmap(matrix(c(2, 1, 0, 3, 0, 1, 0, 3, 2), 3, 3), lim = c(0, 3), breaks = c(0, 1.5, 3), midpoint = 1.5)
-#' draw_heatmap(matrix(c(-0.5, 1, 0, 0.75, 0, 1, 0, 0.75, -0.5), 3, 3))
-#'  @export
-draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = "", lim = NULL,
+#' @param sym.matrix A matrix of symmetric values indicating a relationship between variables of the rows/columns.
+#' @param fill.name Name of values in the symmetric matrix.
+#' @param xlabel Label to include on x-axis.
+#' @param ylabel Label to include on y-axis.
+#' @param limits Limits of the fill values.
+#' @param pyramid Boolean indicates lower triangle of the heamap be removed (TRUE) or not (FALSE).
+#' @param breaks Number of break points in the legend (if legend included).
+#' @param midpoint The midpoint of the legend scale (if legend included).
+#' @param barwidth Width of the legend (if legend included).
+#' @param barheight Height of the legend (if legend included).
+#' @param direction Legend direction either "vertical" or "horizontal".
+#' @param legend Boolean value indicating whether or not to include a legend for the plot.
+#' @param low Lower colour for fill gradient.
+#' @param mid Midpoint colour for fill gradient.
+#' @param high Higher colour for fill gradient.
+#' @return A ggplot heatmap object that can be further manipulated using ggplot components if necessary.
+#' @export
+draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = "", limits = NULL,
                          pyramid = TRUE, breaks = waiver(), midpoint = 0, barwidth = 5, barheight = 1,
-                         text_size = 8, direction = "horizontal", legend = TRUE, low = "blue", mid = "white", high = "red") {
+                         direction = "horizontal", legend = TRUE, low = "blue", mid = "white", high = "red") {
   overlap.melted <- massage_data(sym.matrix, pyramid, fill.name)
   # use ggplot2 to visualize create a ggplot2 object
   plt <- ggplot(
-    data = overlap.melted,
-    mapping = aes(x = Var1, y = Var2, fill = Value)
+    overlap.melted,
+    aes(x = factor(Var1), y = factor(Var2), fill = Value)
   ) +
     geom_tile() +
+    coord_equal(expand=FALSE, clip = "off") +
+    scale_x_discrete(labels=rownames(sym.matrix), expand = c(0, 0), position = "top") +
+    scale_y_discrete(labels=rownames(sym.matrix), expand = c(0, 0)) +
+    scale_fill_gradient2(
+     low = low, mid = mid, high = high, midpoint = midpoint,
+     space = "Lab", na.value = "transparent",
+     limits = limits, breaks = breaks, guide=FALSE
+    ) +
     theme(
-      panel.background = element_blank(),
-      plot.background = element_blank(),
-      axis.text = element_text(color = "gray15", angle = 0),
-      axis.text.x = element_text(angle = 90),
-      axis.title = element_text(color = "gray15"),
-      axis.ticks = element_blank(),
+      plot.margin = margin(0, 0, 0, 0, "null"),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      text = element_text(size = text_size)
-    ) +
-    coord_equal(clip = "off") +
-    scale_x_discrete(expand = c(0, 0), position = "top") +
-    scale_y_discrete(expand = c(0, 0)) +
-    scale_fill_gradient2(
-      low = low, mid = mid, high = high, midpoint = midpoint,
-      space = "Lab", na.value = "transparent",
-      limits = lim, breaks = breaks
-    ) +
-    xlab(xlabel) +
-    ylab(ylabel)
+      panel.background = element_rect(fill = "transparent",colour = NA),
+      plot.background = element_rect(fill = "transparent",colour = NA),
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(angle = 90, hjust = 0)
+    )
 
-  # If a legend should be included, add it to the plt ggplot2 object
+  #If a legend should be included, add it to the plt ggplot2 object
   if (legend == TRUE) {
     plt <- plt +
       guides(fill = guide_colorbar(
@@ -89,19 +86,20 @@ massage_data <- function(sym.matrix, pyramid, fill.name) {
   return(overlap.melted)
 }
 
-#'  Make the pine plot for a list of heatmaps and organize in a stacked, pine tree shape.
+#' Make the pine plot for a list of heatmaps and organize in a stacked, pine tree shape.
 #'
-#'  @param h_maps List of heat maps to add to a pineplot.
-#'  @param num_heatmaps The total number of heat maps to add to pine plot.
-#'  @param height The height of the file to start plotting the heat maps.
-#'  @param leg Boolean indicating if plots have a legend.
-#'  @param angle angle to rotate each heat map.
-#'  @param legend_x_offset Depending on label size and length, may want to adjust position of the legend using offset.
-#'  @param legend_y_offset Depending on label size and length, may want to adjust the y position of the pine plot.
-#'  @param hm_y_offset Changes the y posiiton of heatmap shifting them higher or lower in the viewport.
-#'  @param hm_margin Changes the space left between the heat maps if they need to be closer or farther appart for athstetic purpose.
-#'  @return Pine plot written to view or a file if open. No return object.
-#'  @export
+#' @param h_maps List of heat maps to add to a pineplot.
+#' @param num_heatmaps The total number of heat maps to add to pine plot.
+#' @param height The height of the file to start plotting the heat maps.
+#' @param width The width of the file to start plotting the heat maps.
+#' @param leg Boolean indicating if plots have a legend.
+#' @param angle angle to rotate each heat map.
+#' @param legend_x_offset Depending on label size and length, may want to adjust position of the legend using offset.
+#' @param legend_y_offset Depending on label size and length, may want to adjust the y position of the pine plot.
+#' @param hm_y_offset Changes the y posiiton of heatmap shifting them higher or lower in the viewport.
+#' @param hm_margin Changes the space left between the heat maps if they need to be closer or farther appart for athstetic purpose.
+#' @return Pine plot written to view or a file if open. No return object.
+#' @export
 write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, width = 10, leg = FALSE,
                             angle = c(-45), legend_x_offset = 0.02, legend_y_offset = 0, hm_y_offset = 0,
                             hm_margin = 0) {
@@ -176,54 +174,76 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
   }
 }
 
-generate_pineplot <- function(sym_matrices, filename, width=10, height=30, customize_fn, ...){
-  heatmaps <- lapply(sym_matrices, draw_heatmap, legend=FALSE, ...)
-  if (!missing(customize_fn)){
-    heatmaps <- lapply(heatmaps, customize_fn)
+#' Make a pine plot for a list of symmetric matrices.
+#'
+#' @param sym_matrices List of heat maps to add to a pineplot.
+#' @param height The height (in inches) of the pine plot.
+#' @param annotation_fn Annotation function for ggplot heatmaps.
+#' @param customize_fn Customization function for the heatmap viewports.
+#' @param scale Scaling coefficient for each heatmap. Necessary in some instances to prevent overlap or fill the space between plots.
+#' @param ... Additional arguments to be passed to \code{\link{draw_heatmap}}.
+#' @return No value is returned. The plot is drawn onto the current device or viewport.
+#' @export
+generate_pineplot <- function(sym_matrices,
+                              height=dev.size()[2],
+                              annotation_fn,
+                              customize_fn,
+                              scale = 0.9,
+                              ...) {
+  if (length(sym_matrices) == 0) {
+    stop("ERROR: No symmetric matrices provided.")
   }
-  dev <- plot_dev(NULL, filename=filename)
-  dev(filename, width, height)
-  write_pine_plot(heatmaps, height=height, width=width, leg=TRUE)
-  dev.off()
-}
-
-plot_dev <- function(device, filename = NULL, dpi = 300) {
-  force(filename)
-  force(dpi)
-
-  if (is.function(device))
-    return(device)
-
-  eps <- function(filename, ...) {
-    grDevices::postscript(file = filename, ..., onefile = FALSE, horizontal = FALSE,
-                          paper = "special")
+  if (!all(sapply(sym_matrices, isSymmetric))) {
+    stop("ERROR: One or more of the matrices provided are not symmetric.")
   }
-  devices <- list(
-    eps =  eps,
-    ps =   eps,
-    tex =  function(filename, ...) grDevices::pictex(file = filename, ...),
-    pdf =  function(filename, ..., version = "1.4") grDevices::pdf(file = filename, ..., version = version),
-    svg =  function(filename, ...) svglite::svglite(file = filename, ...),
-    emf =  function(...) grDevices::win.metafile(...),
-    wmf =  function(...) grDevices::win.metafile(...),
-    png =  function(...) grDevices::png(..., res = dpi, units = "in"),
-    jpg =  function(...) grDevices::jpeg(..., res = dpi, units = "in"),
-    jpeg = function(...) grDevices::jpeg(..., res = dpi, units = "in"),
-    bmp =  function(...) grDevices::bmp(..., res = dpi, units = "in"),
-    tiff = function(...) grDevices::tiff(..., res = dpi, units = "in")
-  )
+  heatmaps <- lapply(sym_matrices,
+                     draw_heatmap,
+                     legend=FALSE,
+                     ...)
 
-  if (is.null(device)) {
-    device <- tolower(tools::file_ext(filename))
+  # call annotation_fun on each heatmap
+  # the name of each heatmap is passed as an argument
+  if (!missing(annotation_fn)){
+    heatmaps <- sapply(names(heatmaps), function(k){
+      return(annotation_fn(heatmaps[[k]], k))
+    }, simplify=FALSE, USE.NAMES = TRUE)
   }
 
-  if (!is.character(device) || length(device) != 1) {
-    stop("`device` must be NULL, a string or a function.", call. = FALSE)
-  }
+  # calculate dimensions based on height
+  page_height <- unit(height, 'in')
+  height <- convertUnit(page_height - unit(1.1, 'in'), 'in')  # for legend
+  panel_height <- unit(as.numeric(height)/length(sym_matrices), 'in')
+  width <- 2 * panel_height
 
-  dev <- devices[[device]]
-  if (is.null(dev)) {
-    stop("Unknown graphics device '", device, "'", call. = FALSE)
+  # calculate dimensions of x and y labels
+  grob <- ggplotGrob(heatmaps[[1]])
+  extra_width = convertWidth(sum(grob$widths), unitTo="in")
+  extra_height = convertHeight(sum(grob$width), unitTo="in")
+  scaling_factor = sqrt(2) * scale
+
+  # extract a legend
+  grob <- ggplotGrob(heatmaps[[1]] + guides(fill = guide_colorbar(direction = "horizontal", title.position = "top", title.hjust=.5)))
+  legend <- grob$grobs[[which(sapply(grob$grobs, function(x) x$name) == "guide-box")]]
+  legend_height <- convertHeight(sum(legend$heights), unitTo='in')
+  pushViewport(viewport(width=width, height=height, layout=grid.layout(length(heatmaps),1),
+               just="top", y=unit(1, "npc")))
+
+  for (i in 1:length(heatmaps)){
+    pushViewport(viewport(layout.pos.row=i, layout.pos.col=1))
+    if (!missing(customize_fn)){
+      customize_fn(heatmaps[[i]], names(heatmaps)[[i]])
+    }
+    # DEBUG: grid.rect()
+    pushViewport(viewport(y=unit(0.0, "npc"), width=scaling_factor, height=scaling_factor, angle=-45))
+    # DEBUG: grid.rect(gp=gpar(col="red"))
+    pushViewport(viewport(x=unit(0.5, "npc")-0.5*extra_width, y=unit(0.5, "npc")+0.5*extra_height))
+    # DEBUG: grid.rect(gp=gpar(col="blue"))
+    print(heatmaps[[i]], newpage=FALSE)
+    upViewport(3)
   }
-  dev
+  upViewport()
+  pushViewport(viewport(y=0, height=legend_height, just="bottom"))
+  grid.draw(legend)
+  upViewport()
+  # DEBUG: grid.rect()
 }
