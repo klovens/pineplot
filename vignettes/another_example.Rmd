@@ -1,5 +1,7 @@
 ---
-title: "Another example"
+title: "pineplot: another example"
+author: "Daniel Hogan"
+date: "July 20, 2019"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{another_example}
@@ -24,7 +26,7 @@ library(grid)
 For this example we will be using the Cleveland heart disease dataset. The dataset contains 14 attributes (as columns) across 303 subjects (as rows). The attributes were selected for their relevance to heart disease and include variables such as age, sex, cholesteral level, and maximum heart rate achieved.
 
 ```{r}
-data("heart")
+data(heart)
 colnames(heart)
 attr(heart, "format") # column information
 ```
@@ -45,7 +47,7 @@ heart_subsets <- lapply(heart_subsets, cor)
 ```{r}
 add_label <- function(panel, name){
   text <- paste0('Age:\n', sub('.*\\.', '', name))
-  grid.text(text, x=0.1, y=.5, just='left')
+  grid.text(text, x=.0, y=.7, just='left')
 }
 ```
 
@@ -53,14 +55,21 @@ add_label <- function(panel, name){
 
 Now we
 
-```{r echo=FALSE, fig.height=7, fig.width=8, out.width='100%'}
-pushViewport(viewport(layout=grid.layout(1, 2)))
-for (sex in c(0, 1)){
-  pushViewport(viewport(layout.pos.row = 1, layout.pos.col = sex+1))
+```{r echo=FALSE, fig.height=5.5, fig.width=5, out.width='100%'}
+pdf('example_2.pdf', width = 5.5, height = 5)
+pushViewport(viewport(width=unit(5, 'in'), layout = grid.layout(1, 2)))
+for (sex in c(0, 1)) {
+  pushViewport(viewport(layout.pos.row = 1, layout.pos.col = sex + 1))
   sex_indices <- as.numeric(sub('\\..*', '', names(heart_subsets)))
-  heart_by_sex <- heart_subsets[which(sex_indices==sex)]
-  generate_pineplot(heart_by_sex, filename=paste0('images/sex-', sex, '_pineplot.pdf'),
-                    customize_fn = add_label)
+  heart_by_sex <- heart_subsets[which(sex_indices == sex)]
+  generate_pineplot(
+    heart_by_sex,
+    customize_fn = add_label,
+    breaks=c(-1, -.5, 0, .5, 1),
+    limits=c(-1, 1),
+    low="blue", mid="yellow", high="red"
+  )
   upViewport()
 }
+dev.off()
 ```
