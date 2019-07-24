@@ -17,18 +17,17 @@
 #'
 #' @examples
 #' data(tissue_specific_genes)
-#' ch_grp <- c("B", "B","K","K","L","L","B","K","B","K","L","K")
-#' mu_grp <- c("B","B","K","K","L","L", "B","K","L","B","K","L")
-#' maca_grp <- c("B","B","K","K","L","L","L","B","K","L","B","K","L")
+#' ch_grp <- c("B", "B", "K", "K", "L", "L", "B", "K", "B", "K", "L", "K")
+#' mu_grp <- c("B", "B", "K", "K", "L", "L", "B", "K", "L", "B", "K", "L")
+#' maca_grp <- c("B", "B", "K", "K", "L", "L", "L", "B", "K", "L", "B", "K", "L")
 #' mouse <- 1:12
 #' chicken <- 13:24
 #' macaque <- 25:37
 #'
-#' chicken.profile <- tissue_specific_genes[, chicken][,which(ch_grp=="L")]
-#' mouse.profile <- tissue_specific_genes[, mouse][,which(mu_grp=="L")]
-#' macaque.profile <- tissue_specific_genes[, macaque][,which(maca_grp=="L")]
+#' chicken.profile <- tissue_specific_genes[, chicken][, which(ch_grp == "L")]
+#' mouse.profile <- tissue_specific_genes[, mouse][, which(mu_grp == "L")]
+#' macaque.profile <- tissue_specific_genes[, macaque][, which(maca_grp == "L")]
 "tissue_specific_genes"
-
 
 #' Lists of example symmetric matrices.
 #'
@@ -45,3 +44,13 @@
 #'   ...
 #' }
 "layers"
+
+#' Mergin and Brawand gene expression dataset
+#'
+#' A description.
+"merkin_brawand_rnaseq"
+
+#' Cleveland heart disease dataset
+#'
+#' A description.
+"heart"

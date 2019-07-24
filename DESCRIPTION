@@ -8,7 +8,7 @@ Authors@R: as.person(c(
   ))
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
-License: CCO
+License: CC0
 Encoding: UTF-8
 LazyData: true
 Imports:
@@ -16,8 +16,10 @@ Imports:
   grid,
   gridExtra (>= 2.3),
   reshape2 (>= 1.4.3)
-Suggests: knitr,
+Suggests: 
+    knitr,
     magick,
     rmarkdown,
-    testthat
+    testthat (>= 2.1.0)
 VignetteBuilder: knitr
+RoxygenNote: 6.1.1

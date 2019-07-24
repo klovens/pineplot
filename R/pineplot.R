@@ -18,4 +18,11 @@
 #' @name pineplot
 NULL
 
-## NULL
+#' @import ggplot2
+NULL
+
+#' @import reshape2
+NULL
+
+#' @import grid
+NULL
