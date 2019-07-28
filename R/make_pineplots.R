@@ -187,7 +187,8 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
 generate_pineplot <- function(sym_matrices,
                               annotation_fn,
                               customize_fn,
-                              scale = 1.2,
+                              scale = 1.0,
+                              legend_scale = 1.0,
                               ...) {
   if (length(sym_matrices) == 0) {
     stop("ERROR: No symmetric matrices provided.")
@@ -204,9 +205,9 @@ generate_pineplot <- function(sym_matrices,
   # call annotation_fun on each heatmap
   # the name of each heatmap is passed as an argument
   if (!missing(annotation_fn)) {
-    heatmaps <- lapply(names(heatmaps), function(k) {
-      annotation_fn(heatmaps[[k]], k)
-    })
+    for (name in names(heatmaps)) {
+      heatmaps[[name]] <- annotation_fn(heatmaps[[name]], name)
+    }
   }
 
   # extract a legend
@@ -222,38 +223,54 @@ generate_pineplot <- function(sym_matrices,
   legend_height <- convertHeight(sum(legend$heights), unitTo = "in")
 
   grobs <- lapply(heatmaps, ggplotGrob)
+
+  if (!missing(customize_fn)) {
+    for (name in names(grobs)) {
+      customize_fn(grobs[[name]], name)
+    }
+  }
+
   data_margin <- convertWidth(sum(grobs[[1]]$widths), unitTo = "in")
   grobs <- lapply(grobs,
     editGrob,
     vp = viewport(
       angle = -45,
       y = 1 / sqrt(2) * data_margin,
-      width = unit(scale, "npc"),
-      height = unit(scale, "npc")
+      width = unit(scale * 1.2, "npc"),
+      height = unit(scale * 1.2, "npc")
     )
   )
 
-  if (!missing(customize_fn)) {
-    customize_fn(heatmaps[[i]], names(heatmaps)[[i]])
-  }
-
   gtbl <- gtable(
-    widths = unit(scale * sqrt(2), "null"),
-    heights = unit.c(rep(unit(1, "null"), length(heatmaps)), 1.2 * legend_height),
+    widths = unit(scale * 1.2 * sqrt(2), "null"),
+    heights = unit.c(rep(unit(1, "null"), length(heatmaps)), legend_scale * 1.25 * legend_height),
     respect = T
   )
+
   # set background to theme plot.background
   gtbl <- gtable_add_grob(
     gtbl,
     element_grob(theme_get()$plot.background),
     t = 1, l = 1, b = length(gtbl$heights), r = 1
   )
+
   # add heatmaps
   gtbl <- gtable_add_grob(
     gtbl,
     grobs,
     t = seq_along(grobs), l = 1
   )
+
+  # generate and add annotations
+  if (!missing(customize_fn)) {
+    gtbl <- gtable_add_grob(
+      gtbl,
+      lapply(names(grobs), function(x) customize_fn(grobs[[x]], x)),
+      t = seq_along(grobs), l = 1,
+      name = seq_along(grobs)
+    )
+  }
+
   # add legend
   gtbl <- gtable_add_grob(gtbl, legend, length(heatmaps) + 1, 1)
 
