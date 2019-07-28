@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(pineplot)
 library(grid)
+library(gridExtra)
 ```
 
 # Loading the Data
@@ -33,7 +34,7 @@ attr(heart, "format") # column information
 
 # Preprocessing
 
-We will be examining the interaction between XXX when controlling for the factors of sex and age. Levels for the sex attribute are already defined (1 = male; 0 = female). For the age attribute we define 3 levels (i.e. age groups) using the `cut` function. The dataframe is then partitioned by sex and age and correlation matrices are calculated for each partition.
+We will be examining the interaction between several variables when controlling for factors of sex and age. Levels for the sex attribute are already defined (1 = male; 0 = female). For the age attribute we define 3 levels (i.e. age groups) using the `cut` function. The dataframe is then partitioned by sex and age and correlation matrices are calculated for each partition.
 
 ```{r}
 heart['age'] <- cut(heart[['age']], 3)
@@ -47,7 +48,7 @@ heart_subsets <- lapply(heart_subsets, cor)
 ```{r}
 add_label <- function(panel, name){
   text <- paste0('Age:\n', sub('.*\\.', '', name))
-  grid.text(text, x=.0, y=.7, just='left')
+  textGrob(text, x=0, y=.8, just='left')
 }
 ```
 
@@ -55,21 +56,20 @@ add_label <- function(panel, name){
 
 Now we
 
-```{r echo=FALSE, fig.height=5.5, fig.width=5, out.width='100%'}
-pdf('example_2.pdf', width = 5.5, height = 5)
-pushViewport(viewport(width=unit(5, 'in'), layout = grid.layout(1, 2)))
+```{r fig.align='center', fig.height=5, fig.width=5, out.width='100%'}
+pineplots <- list()
 for (sex in c(0, 1)) {
-  pushViewport(viewport(layout.pos.row = 1, layout.pos.col = sex + 1))
   sex_indices <- as.numeric(sub('\\..*', '', names(heart_subsets)))
   heart_by_sex <- heart_subsets[which(sex_indices == sex)]
-  generate_pineplot(
+  pp <- generate_pineplot(
     heart_by_sex,
     customize_fn = add_label,
     breaks=c(-1, -.5, 0, .5, 1),
     limits=c(-1, 1),
-    low="blue", mid="yellow", high="red"
+    low="blue", mid="yellow", high="red",
+    legend_scale=1.2
   )
-  upViewport()
+  pineplots[[sex+1]] <- pp
 }
-dev.off()
+grid.arrange(pineplots[[1]], pineplots[[2]], nrow=1)
 ```
