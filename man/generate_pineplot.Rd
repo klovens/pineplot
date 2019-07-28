@@ -4,19 +4,17 @@
 \alias{generate_pineplot}
 \title{Make a pine plot for a list of symmetric matrices.}
 \usage{
-generate_pineplot(sym_matrices, height = dev.size()[2], annotation_fn,
-  customize_fn, scale = 0.9, ...)
+generate_pineplot(sym_matrices, annotation_fn, customize_fn, scale = 1.2,
+  ...)
 }
 \arguments{
 \item{sym_matrices}{List of heat maps to add to a pineplot.}
-
-\item{height}{The height (in inches) of the pine plot.}
 
 \item{annotation_fn}{Annotation function for ggplot heatmaps.}
 
 \item{customize_fn}{Customization function for the heatmap viewports.}
 
-\item{scale}{Scaling coefficient for each heatmap. Necessary in some instances to prevent overlap or fill the space between plots.}
+\item{scale}{Scaling coefficient applied to each heatmap. Necessary in some instances to prevent overlap or reduce the whitespace between plots.}
 
 \item{...}{Additional arguments to be passed to \code{\link{draw_heatmap}}.}
 }
