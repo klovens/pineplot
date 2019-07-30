@@ -4,8 +4,8 @@
 \alias{generate_pineplot}
 \title{Make a pine plot for a list of symmetric matrices.}
 \usage{
-generate_pineplot(sym_matrices, annotation_fn, customize_fn, scale = 1.2,
-  ...)
+generate_pineplot(sym_matrices, annotation_fn, customize_fn, scale = 1,
+  legend_scale = 1, legend = TRUE, ...)
 }
 \arguments{
 \item{sym_matrices}{List of heat maps to add to a pineplot.}
@@ -15,6 +15,10 @@ generate_pineplot(sym_matrices, annotation_fn, customize_fn, scale = 1.2,
 \item{customize_fn}{Customization function for the heatmap viewports.}
 
 \item{scale}{Scaling coefficient applied to each heatmap. Necessary in some instances to prevent overlap or reduce the whitespace between plots.}
+
+\item{legend_scale}{Scaling factor for legend size.}
+
+\item{legend}{Logical value indicating whether to include a colourbar legend or not.}
 
 \item{...}{Additional arguments to be passed to \code{\link{draw_heatmap}}.}
 }
