@@ -15,7 +15,8 @@ Imports:
   ggplot2 (>= 3.0.0),
   grid,
   gridExtra (>= 2.3),
-  reshape2 (>= 1.4.3)
+  reshape2 (>= 1.4.3),
+  gtable
 Suggests: 
     knitr,
     magick,

@@ -181,6 +181,8 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
 #' @param annotation_fn Annotation function for ggplot heatmaps.
 #' @param customize_fn Customization function for the heatmap viewports.
 #' @param scale Scaling coefficient applied to each heatmap. Necessary in some instances to prevent overlap or reduce the whitespace between plots.
+#' @param legend Logical value indicating whether to include a colourbar legend or not.
+#' @param legend_scale Scaling factor for legend size.
 #' @param ... Additional arguments to be passed to \code{\link{draw_heatmap}}.
 #' @return No value is returned. The plot is drawn onto the current device or viewport.
 #' @export
@@ -189,6 +191,7 @@ generate_pineplot <- function(sym_matrices,
                               customize_fn,
                               scale = 1.0,
                               legend_scale = 1.0,
+                              legend=TRUE,
                               ...) {
   if (length(sym_matrices) == 0) {
     stop("ERROR: No symmetric matrices provided.")
@@ -219,8 +222,8 @@ generate_pineplot <- function(sym_matrices,
         title.hjust = .5
       )
     ))
-  legend <- grob$grobs[[which(sapply(grob$grobs, function(x) x$name) == "guide-box")]]
-  legend_height <- convertHeight(sum(legend$heights), unitTo = "in")
+  legend_grob <- grob$grobs[[which(sapply(grob$grobs, function(x) x$name) == "guide-box")]]
+  legend_height <- convertHeight(sum(legend_grob$heights), unitTo = "in")
 
   grobs <- lapply(heatmaps, ggplotGrob)
 
@@ -241,9 +244,10 @@ generate_pineplot <- function(sym_matrices,
     )
   )
 
+  heights <- unit.c(rep(unit(1, "null"), length(heatmaps)), legend_scale * 1.25 * legend_height)
   gtbl <- gtable(
     widths = unit(scale * 1.2 * sqrt(2), "null"),
-    heights = unit.c(rep(unit(1, "null"), length(heatmaps)), legend_scale * 1.25 * legend_height),
+    heights = heights,
     respect = T
   )
 
@@ -272,11 +276,14 @@ generate_pineplot <- function(sym_matrices,
   }
 
   # add legend
-  gtbl <- gtable_add_grob(gtbl, legend, length(heatmaps) + 1, 1)
+  if (legend) {
+    gtbl <- gtable_add_grob(gtbl, legend_grob, length(heatmaps) + 1, 1)
+  }
 
   for (i in seq_along(gtbl$grobs)) {
     gtbl$grobs[[i]]$layout$clip <- "off"
   }
 
+  gtbl$legend_grob <- legend_grob
   return(gtbl)
 }

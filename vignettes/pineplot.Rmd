@@ -18,8 +18,10 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(pineplot)
+library(gtable)
 library(ggplot2)
 library(grid)
+library(gridExtra)
 library(magick)
 ```
 

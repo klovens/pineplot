@@ -1,10 +1,10 @@
 ---
-title: "pineplot: another example"
+title: "pineplot: Cleveland heart disease dataset"
 author: "Daniel Hogan"
 date: "July 20, 2019"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{another_example}
+  %\VignetteIndexEntry{cleveland_heart_disease}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(pineplot)
+library(gtable)
 library(grid)
 library(gridExtra)
 ```
@@ -34,7 +35,7 @@ attr(heart, "format") # column information
 
 # Preprocessing
 
-We will be examining the interaction between several variables when controlling for factors of sex and age. Levels for the sex attribute are already defined (1 = male; 0 = female). For the age attribute we define 3 levels (i.e. age groups) using the `cut` function. The dataframe is then partitioned by sex and age and correlation matrices are calculated for each partition.
+We will be examining the interaction between several variables while controlling for factors of sex and age. Levels for the sex attribute are already defined (1 = male; 0 = female). For the age attribute we define 3 levels (i.e. age groups) using the `cut` function. The dataframe is then partitioned by sex and age and correlation matrices are calculated for each partition.
 
 ```{r}
 heart['age'] <- cut(heart[['age']], 3)
@@ -45,6 +46,8 @@ heart_subsets <- lapply(heart_subsets, cor)
 
 # Annotation Functions
 
+We define a callback function that generates a text grob (GRaphical OBject) given the heatmap objects and a name argument. The callback function will be used to label the heatmaps.
+
 ```{r}
 add_label <- function(panel, name){
   text <- paste0('Age:\n', sub('.*\\.', '', name))
@@ -52,9 +55,9 @@ add_label <- function(panel, name){
 }
 ```
 
-# Pineplot generation
+# Pineplot Generation
 
-Now we
+Two pineplots are generated, one for females and one for males. The pineplots are stored in a list for later arrangment using the grid package. When calling generate_pineplot, we pass the callback function as an argument. The \code{\link{grid.arrange}} function is used to lay the pine plots out side-by-side for easy comparison.
 
 ```{r fig.align='center', fig.height=5, fig.width=5, out.width='100%'}
 pineplots <- list()
