@@ -1,39 +1,36 @@
 #' Plots a heatmap of a symmetric matrix.
 #'
-#' @param sym.matrix A matrix of symmetric values indicating a relationship between variables of the rows/columns.
-#' @param fill.name Name of values in the symmetric matrix.
+#' @param sym_matrix A matrix of symmetric values indicating a relationship between variables of the rows/columns.
+#' @param fill_name Name of values in the symmetric matrix.
 #' @param xlabel Label to include on x-axis.
 #' @param ylabel Label to include on y-axis.
 #' @param limits Limits of the fill values.
 #' @param pyramid Boolean indicates lower triangle of the heamap be removed (TRUE) or not (FALSE).
-#' @param breaks Number of break points in the legend (if legend included).
 #' @param midpoint The midpoint of the legend scale (if legend included).
-#' @param barwidth Width of the legend (if legend included).
-#' @param barheight Height of the legend (if legend included).
-#' @param direction Legend direction either "vertical" or "horizontal".
-#' @param legend Boolean value indicating whether or not to include a legend for the plot.
 #' @param low Lower colour for fill gradient.
 #' @param mid Midpoint colour for fill gradient.
 #' @param high Higher colour for fill gradient.
+#' @param breaks Position of the tick marks in the heatmap legend.
 #' @return A ggplot heatmap object that can be further manipulated using ggplot components if necessary.
 #' @export
-draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = "", limits = NULL,
-                         pyramid = TRUE, breaks = waiver(), midpoint = 0, barwidth = 5, barheight = 1,
-                         direction = "horizontal", legend = TRUE, low = "blue", mid = "white", high = "red") {
-  overlap.melted <- massage_data(sym.matrix, pyramid, fill.name)
+draw_heatmap <- function(sym_matrix, fill_name = "Value", xlabel = "", ylabel = "", limits = NULL,
+                         pyramid = TRUE, low = "blue", mid = "white", high = "red", midpoint = 0,
+                         breaks = waiver()) {
+  overlap_melted <- massage_data(sym_matrix, pyramid, fill_name)
   # use ggplot2 to visualize create a ggplot2 object
   plt <- ggplot(
-    overlap.melted,
+    overlap_melted,
     aes(x = factor(Var1), y = factor(Var2), fill = Value)
   ) +
     geom_tile() +
     coord_equal(expand = FALSE, clip = "off") +
-    scale_x_discrete(labels = rownames(sym.matrix), expand = c(0, 0), position = "top") +
-    scale_y_discrete(labels = rownames(sym.matrix), expand = c(0, 0)) +
+    scale_x_discrete(labels = rownames(sym_matrix), expand = c(0, 0), position = "top") +
+    scale_y_discrete(labels = rownames(sym_matrix), expand = c(0, 0)) +
     scale_fill_gradient2(
       low = low, mid = mid, high = high, midpoint = midpoint,
       space = "Lab", na.value = "transparent",
-      limits = limits, breaks = breaks, guide = FALSE
+      limits = limits, guide = FALSE,
+      breaks = breaks
     ) +
     theme(
       plot.margin = margin(0, 0, 0, 0, "null"),
@@ -46,22 +43,6 @@ draw_heatmap <- function(sym.matrix, fill.name = "Value", xlabel = "", ylabel = 
       axis.text.x = element_text(angle = 90, hjust = 0),
       legend.background = element_blank()
     )
-
-  # If a legend should be included, add it to the plt ggplot2 object
-  if (legend == TRUE) {
-    plt <- plt +
-      guides(fill = guide_colorbar(
-        barwidth = 7, barheight = 1, ticks = FALSE, direction = "horizontal",
-        title.position = "top",
-        label.position = "bottom",
-        title.theme = element_text(colour = "gray15", size = 8),
-        title.hjust = 0.5,
-        label.theme = element_text(
-          angle = 90, hjust = 0.8, vjust = 0.5,
-          size = 6, colour = "gray15"
-        )
-      ))
-  }
 
   return(plt)
 }
@@ -177,21 +158,37 @@ write_pine_plot <- function(h_maps, num_heatmaps = length(h_maps), height = 30, 
 
 #' Make a pine plot for a list of symmetric matrices.
 #'
-#' @param sym_matrices List of heat maps to add to a pineplot.
+#' @description
+#' The [generate_pineplot] function creates a pine plot, a series of modified ggplot heatmaps,
+#' from a list of symmetric matrices.
+#' Adjustments to each ggplot heatmap can be performed by passing a function to \code{annotate_fn}.
+#' The function should accept two arguments, a ggplot heatmap object, and general purpose data.
+#' A second callback function can customize the heatmap grob through the \code{customize_fn} parameter.
+#' If a legend is desired, the \code{legend} parameter should be set to TRUE.
+#' The \code{legend} parameters can be used to customize the appearance.
+#' A \code{legend} grob is added to the return value, regardless of the \code{legend} parameter, for later use.
+#'
+#' @param sym_matrices List of heat maps to add to a pineplot. The names are important if
 #' @param annotation_fn Annotation function for ggplot heatmaps.
 #' @param customize_fn Customization function for the heatmap viewports.
 #' @param scale Scaling coefficient applied to each heatmap. Necessary in some instances to prevent overlap or reduce the whitespace between plots.
-#' @param legend Logical value indicating whether to include a colourbar legend or not.
-#' @param legend_scale Scaling factor for legend size.
+#' @param legend.show Logical value indicating whether to include a colourbar legend or not.
+#' @param legend.scale Scaling factor for legend height.
+#' @param legend.args List of arguments to pass to the ggplot function \code{\link{guide_colourbar}} function.
 #' @param ... Additional arguments to be passed to \code{\link{draw_heatmap}}.
-#' @return No value is returned. The plot is drawn onto the current device or viewport.
+#' @return A pine plot as a grob (i.e. gtable).
+#' @examples
+#' ms <- replicate(3, outer(-3:3, -3:3, "+"), simplify = FALSE)
+#' gr <- generate_pineplot(ms)
+#' ggplot2::ggsave('example.pdf', gr)
 #' @export
 generate_pineplot <- function(sym_matrices,
                               annotation_fn,
                               customize_fn,
                               scale = 1.0,
-                              legend_scale = 1.0,
-                              legend=TRUE,
+                              legend.show = TRUE,
+                              legend.scale = 1.0,
+                              legend.args = list(),
                               ...) {
   if (length(sym_matrices) == 0) {
     stop("ERROR: No symmetric matrices provided.")
@@ -199,9 +196,15 @@ generate_pineplot <- function(sym_matrices,
   if (!all(sapply(sym_matrices, isSymmetric))) {
     stop("ERROR: One or more of the matrices provided are not symmetric.")
   }
+  legend.defaults = list(direction = "horizontal",
+                         title.position = "top",
+                         title.hjust = .5)
+  for (name in names(legend.args)) {
+    legend.defaults[[name]] <- legend.args[[name]]
+  }
+
   heatmaps <- lapply(sym_matrices,
     draw_heatmap,
-    legend = FALSE,
     ...
   )
 
@@ -214,14 +217,7 @@ generate_pineplot <- function(sym_matrices,
   }
 
   # extract a legend
-  grob <- ggplotGrob(heatmaps[[1]] +
-    guides(
-      fill = guide_colorbar(
-        direction = "horizontal",
-        title.position = "top",
-        title.hjust = .5
-      )
-    ))
+  grob <- ggplotGrob(heatmaps[[1]] + guides(fill = do.call(guide_colorbar, legend.defaults)))
   legend_grob <- grob$grobs[[which(sapply(grob$grobs, function(x) x$name) == "guide-box")]]
   legend_height <- convertHeight(sum(legend_grob$heights), unitTo = "in")
 
@@ -244,7 +240,7 @@ generate_pineplot <- function(sym_matrices,
     )
   )
 
-  heights <- unit.c(rep(unit(1, "null"), length(heatmaps)), legend_scale * 1.25 * legend_height)
+  heights <- unit.c(rep(unit(1, "null"), length(heatmaps)), legend.scale * 1.25 * legend_height)
   gtbl <- gtable(
     widths = unit(scale * 1.2 * sqrt(2), "null"),
     heights = heights,
@@ -276,7 +272,7 @@ generate_pineplot <- function(sym_matrices,
   }
 
   # add legend
-  if (legend) {
+  if (legend.show) {
     gtbl <- gtable_add_grob(gtbl, legend_grob, length(heatmaps) + 1, 1)
   }
 

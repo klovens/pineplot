@@ -14,13 +14,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
-
-```{r setup}
 library(pineplot)
-library(gtable)
-library(grid)
-library(gridExtra)
 ```
 
 # Loading the Data
@@ -35,7 +29,7 @@ attr(heart, "format") # column information
 
 # Preprocessing
 
-We will be examining the interaction between several variables while controlling for factors of sex and age. Levels for the sex attribute are already defined (1 = male; 0 = female). For the age attribute we define 3 levels (i.e. age groups) using the `cut` function. The dataframe is then partitioned by sex and age and correlation matrices are calculated for each partition.
+We will be examining the interaction between several variables while controlling for factors of sex and age. Levels for the sex attribute are already defined in the dataset (1 = male; 0 = female). For the age attribute, we define 3 levels (i.e. age groups) using the \code{cut} function. Correlation matrices are then calculated for each of the subsets defined by the sex and age factors.
 
 ```{r}
 heart['age'] <- cut(heart[['age']], 3)
@@ -46,9 +40,11 @@ heart_subsets <- lapply(heart_subsets, cor)
 
 # Annotation Functions
 
-We define a callback function that generates a text grob (GRaphical OBject) given the heatmap objects and a name argument. The callback function will be used to label the heatmaps.
+We define a callback function that generates a text grob (**GR**aphical **OB**ject) given the heatmap objects and a name argument. The callback function will be used to label the heatmaps. The functionality for creating text grobs and other basic grobs is provided by the `grid` package.
 
 ```{r}
+library(grid)
+
 add_label <- function(panel, name){
   text <- paste0('Age:\n', sub('.*\\.', '', name))
   textGrob(text, x=0, y=.8, just='left')
@@ -57,9 +53,9 @@ add_label <- function(panel, name){
 
 # Pineplot Generation
 
-Two pineplots are generated, one for females and one for males. The pineplots are stored in a list for later arrangment using the grid package. When calling generate_pineplot, we pass the callback function as an argument. The \code{\link{grid.arrange}} function is used to lay the pine plots out side-by-side for easy comparison.
+Two pineplots are generated, one for females and one for males. The pineplots are stored in a list for later arrangment using the `grid` package. When calling `generate_pineplot`, we pass the callback function as an argument.
 
-```{r fig.align='center', fig.height=5, fig.width=5, out.width='100%'}
+```{r}
 pineplots <- list()
 for (sex in c(0, 1)) {
   sex_indices <- as.numeric(sub('\\..*', '', names(heart_subsets)))
@@ -70,9 +66,16 @@ for (sex in c(0, 1)) {
     breaks=c(-1, -.5, 0, .5, 1),
     limits=c(-1, 1),
     low="blue", mid="yellow", high="red",
-    legend_scale=1.2
+    legend.scale=1.2
   )
-  pineplots[[sex+1]] <- pp
+  pineplots <- c(pineplots, list(pp))
 }
+```
+ 
+The `grid.arrange` function provided by `gridExtra` is used to lay the pine plots out side-by-side for easy comparison.
+ 
+```{r, fig.align='center', fig.height=5, fig.width=5, out.width='100%'}
+library(gridExtra)
+
 grid.arrange(pineplots[[1]], pineplots[[2]], nrow=1)
 ```

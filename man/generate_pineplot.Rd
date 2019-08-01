@@ -5,10 +5,10 @@
 \title{Make a pine plot for a list of symmetric matrices.}
 \usage{
 generate_pineplot(sym_matrices, annotation_fn, customize_fn, scale = 1,
-  legend_scale = 1, legend = TRUE, ...)
+  legend.show = TRUE, legend.scale = 1, legend.args = list(), ...)
 }
 \arguments{
-\item{sym_matrices}{List of heat maps to add to a pineplot.}
+\item{sym_matrices}{List of heat maps to add to a pineplot. The names are important if}
 
 \item{annotation_fn}{Annotation function for ggplot heatmaps.}
 
@@ -16,15 +16,29 @@ generate_pineplot(sym_matrices, annotation_fn, customize_fn, scale = 1,
 
 \item{scale}{Scaling coefficient applied to each heatmap. Necessary in some instances to prevent overlap or reduce the whitespace between plots.}
 
-\item{legend_scale}{Scaling factor for legend size.}
+\item{legend.show}{Logical value indicating whether to include a colourbar legend or not.}
 
-\item{legend}{Logical value indicating whether to include a colourbar legend or not.}
+\item{legend.scale}{Scaling factor for legend height.}
+
+\item{legend.args}{List of arguments to pass to the ggplot function \code{\link{guide_colourbar}} function.}
 
 \item{...}{Additional arguments to be passed to \code{\link{draw_heatmap}}.}
 }
 \value{
-No value is returned. The plot is drawn onto the current device or viewport.
+A pine plot as a grob (i.e. gtable).
 }
 \description{
-Make a pine plot for a list of symmetric matrices.
+The [generate_pineplot] function creates a pine plot, a series of modified ggplot heatmaps,
+from a list of symmetric matrices.
+Adjustments to each ggplot heatmap can be performed by passing a function to \code{annotate_fn}.
+The function should accept two arguments, a ggplot heatmap object, and general purpose data.
+A second callback function can customize the heatmap grob through the \code{customize_fn} parameter.
+If a legend is desired, the \code{legend} parameter should be set to TRUE.
+The \code{legend} parameters can be used to customize the appearance.
+A \code{legend} grob is added to the return value, regardless of the \code{legend} parameter, for later use.
+}
+\examples{
+ms <- replicate(3, outer(-3:3, -3:3, "+"), simplify = FALSE)
+gr <- generate_pineplot(ms)
+ggplot2::ggsave('example.pdf', gr)
 }

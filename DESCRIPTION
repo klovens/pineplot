@@ -4,7 +4,8 @@ Title: Visualization of stacked symmetric matrices
 Version: 0.0.0.9000
 Authors@R: as.person(c(
     "Farhad Maleki <farhad.maleki@usask.ca> [aut, cre]", 
-    "Katie Ovens <katie.ovens@usask.ca> [aut]"
+    "Katie Ovens <katie.ovens@usask.ca> [aut]",
+    "Daniel Hogan <daniel.hogan@usask.ca> [aut]"
   ))
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
