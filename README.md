@@ -13,11 +13,16 @@ The paper will be available soon.
 
 ## Getting Started
 
-The R package **devtools** can be used to install this package. 
+The R package **devtools** can be used to install this package. If you do not have **devtools**, it can be intalled and loaded using the following commands.
 ```
 install.packages("devtools")
 library(devtools)
+```
+Next, install **pineplot** and load the package.
+
+```
 install_github("klovens/pineplot")
+library(pineplot)
 ```
 Examples and code demonstrating some of the different uses for **pineplot** are available in *vignettes*.
 
