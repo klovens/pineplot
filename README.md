@@ -13,6 +13,7 @@ The paper will be available soon.
 
 ## Getting Started
 
+Examples and code demonstrating some of the different uses for **pineplot** are available in *vignettes*.
 
 ### Prerequisites
 This package requires that ggplot2 (>= 3.0.0), grid, gridExtra (>= 2.3), reshape2 (>= 1.4.3), and gtable are installed. We also suggest knitr, magick, rmarkdown, and testthat (>= 2.1.0) in order to run all examples and tests.
