@@ -13,7 +13,7 @@ The paper will be available soon.
 
 ## Getting Started
 
-The R package **devtools** can be used to install this package. If you do not have **devtools**, it can be intalled and loaded using the following commands.
+The R package **devtools** can be used to install this package. If you do not have **devtools**, it can be installed and loaded using the following commands.
 ```
 install.packages("devtools")
 library(devtools)
