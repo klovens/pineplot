@@ -1,6 +1,6 @@
 ---
 title: "pineplot"
-author: "Farhad Maleki"
+author: "Katie Ovens and Farhad Maleki"
 date: "October 1, 2018"
 output: rmarkdown::html_vignette
 vignette: >
