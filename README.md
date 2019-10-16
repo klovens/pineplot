@@ -1,6 +1,12 @@
 # pineplot
 
-pineplot is an R package for visualizing symmetric matrices/heatmaps.
+The **pineplot** package can be used to generate pine plots, which are stacked triangular heat maps that are generated using the visualization capabilities of **ggplot2** and rotation from **grid**. Visualizing symmetric matrices in this way has the following benefits:
+
+- Removes redundancy by removing half of the symmetric heat map
+- Allows for visualizing more heatmaps in the same page, as it saves space
+- Increases the margin space to allow for more annotation around axes
+- Since each heat map is a **ggplot2** object, the heatmaps can be easily manipulated after creation before construction of a pine plot
+
 The paper will be available soon.
 
 <!-- ![pineplot](vignettes/images/example.jpg) -->
