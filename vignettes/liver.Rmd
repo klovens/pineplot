@@ -1,12 +1,19 @@
 ---
-title: "liver"
-author: "Katie Ovens"
-date: "17/10/2019"
-output: html_document
+title: "Liver Disease Dataset"
+author: "Katie Ovens and Farhad Maleki"
+date: "October 17, 2019"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{liver}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
 library(pineplot)
 library(gridExtra)
 ```
