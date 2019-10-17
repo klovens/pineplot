@@ -1,0 +1,67 @@
+---
+title: "liver"
+author: "Katie Ovens"
+date: "17/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(pineplot)
+library(gridExtra)
+```
+
+## Loading the Liver Disease Dataset
+
+The liver disease dataset contains liver disease and healthy patients and 10 features: "age","sex","tbil","dbil","Alkphos","Sgpt", "Sgot","Proteins","Albumin", and "AG Ratio".
+
+```{r cars}
+data(liver_disease)
+```
+
+## Calculating the Correlation Between Features
+
+We use Pearson correlation as an example to calculate the correlation between the features. The dataframe is first divided based on patient age. We will calculate the correlation between features for any healthy patient as an example and splitting up male and female patients as well.
+
+```{r pressure, echo=FALSE}
+ages <- c("> 45", "[30,45]","< 30")
+
+age1_c <-ckd[ckd$age <100 & ckd$age >45 & ckd$sex == "Female"& ckd$Class == "1",]
+age2_c <- ckd[ckd$age <=45 & ckd$age >=30& ckd$sex == "Female"& ckd$Class == "1",]
+age3_c <- ckd[ckd$age <30 & ckd$sex == "Female"& ckd$Class == "1",]
+age1_d <-ckd[ckd$age <100 & ckd$age >45 & ckd$sex == "Male"& ckd$Class == "1",]
+age2_d <- ckd[ckd$age <=45 & ckd$age >=30 & ckd$sex == "Male"& ckd$Class == "1",]
+age3_d <- ckd[ckd$age <30 & ckd$sex == "Male"& ckd$Class == "1",]
+
+datasets <- list(list(age1_c,age2_c,age3_c),list(age1_d,age2_d,age3_d))
+
+#calculate correlation using features in columns 3-10
+cor_data <- get.correlation.matrices(datasets,cols=c(3:10))
+cor_data <- list(cor_data[1:3],cor_data[4:6])
+names(cor_data[[1]])<- ages
+names(cor_data[[2]])<- ages
+```
+
+We obtain a list of lists where the male and female entries each contain a list of correlation matrices seperated by age.
+
+## Generate the pineplot
+
+```{r}
+pineplots <- list()
+for (sex in c(0, 1)) {
+  liver_by_sex <- cor_data[[sex+1]]
+  pp <- generate_pineplot(
+    liver_by_sex,
+    customize_fn = add_label,
+    breaks=c(-1, -.5, 0, .5, 1),
+    limits=c(-1, 1),
+    low="blue", mid="yellow", high="red"
+  )
+  pineplots <- c(pineplots, list(pp))
+}
+
+grid.arrange(pineplots[[1]], pineplots[[2]], nrow=1)
+```
+
+The same steps may be taken for generating the pineplots for the liver disease patients.
+For a similar example, see the Cleveland Heart Disease vignette.
