@@ -9,7 +9,10 @@ The **pineplot** package can be used to generate pine plots, which are stacked t
 
 The paper will be available soon.
 
-<!-- ![pineplot](vignettes/images/example.jpg) -->
+Brain Tissue             |  Liver Tissue     |  Kidney Tissue
+:-------------------------:|:-------------------------:|:-------------------------:
+![pineplot](vignettes/images/pineplot_brain.jpg)  |  ![pineplot](vignettes/images/pineplot_liver.jpg) | ![pineplot](vignettes/images/pineplot_kidney.jpg)
+
 
 ## Getting Started
 
